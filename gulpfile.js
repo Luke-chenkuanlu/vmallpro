@@ -2,7 +2,8 @@
 var{ src , dest , series , parallel , watch } = require('gulp');
 var clean = require('gulp-clean');
 var fileInclude = require('gulp-file-include');
-var webserver = require('gulp-webserver')
+var webserver = require('gulp-webserver');
+var sass = require('gulp-sass');
 
 function cleanTask(){
     return src('/dist' , {allowEmpty : true})
@@ -19,20 +20,35 @@ function fileIncludeTask(){
 }
 
 function webserverTask(){
-    return src ('./dist/view')
+    return src ('./dist')
             .pipe( webserver({
                 host : 'localhost',
                 port : 4000,
-                open : './index.html',
+                open : './view/index.html',
                 livereload : true
             }))
 }
 
-function watchTask(){
-    watch('./src/view/**' , fileIncludeTask);
+function sassTask(){
+    return src('./src/css/*.scss')
+            .pipe(sass())
+            .pipe(dest('./dist/css'))
 }
 
+function staticTask(){
+    return src('./src/static/**')
+            .pipe(dest('./dist/static'))
+}
+
+function watchTask(){
+    watch('./src/view/**' , fileIncludeTask);
+    watch('./src/css/**' , sassTask);
+    watch('./src/static/**' , staticTask);
+}
+
+
+
 module.exports = {
-    dev : series(cleanTask  , fileIncludeTask ,  parallel(webserverTask , watchTask) ),
+    dev : series(cleanTask  , parallel(fileIncludeTask , sassTask , staticTask) , parallel(webserverTask , watchTask) ),
     build : series(cleanTask)
 };
