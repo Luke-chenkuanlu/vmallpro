@@ -40,15 +40,31 @@ function staticTask(){
             .pipe(dest('./dist/static'))
 }
 
+function libTask(){
+    return src('./src/lib/**')
+            .pipe(dest('./dist/lib'))
+}
+function apiTask(){
+    return src('./src/api/**')
+            .pipe(dest('./dist/api'))
+}
+function jsTask(){
+    return src('./src/js/**')
+            .pipe(dest('./dist/js'))
+}
+
 function watchTask(){
     watch('./src/view/**' , fileIncludeTask);
     watch('./src/css/**' , sassTask);
     watch('./src/static/**' , staticTask);
+    watch('./src/lib/**' , libTask);
+    watch('./src/api/**' , apiTask);
+    watch('./src/js/**' , jsTask);
 }
 
 
 
 module.exports = {
-    dev : series(cleanTask  , parallel(fileIncludeTask , sassTask , staticTask) , parallel(webserverTask , watchTask) ),
+    dev : series(cleanTask  , parallel(fileIncludeTask , sassTask , staticTask , libTask , apiTask , jsTask) , parallel(webserverTask , watchTask) ),
     build : series(cleanTask)
 };
