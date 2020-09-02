@@ -1,16 +1,17 @@
 
-
 requirejs.config({
     paths : {
             "jquery" : "../lib/jquery-3.4.1.min"
     }
 });
 
-define(['jquery','../api/server','./modules/banner'],function($ , { getBanner2Data , getDetailData}, initBanner){
+//首页的具体业务流程，拿到首页要用到的数据。
+define(['jquery','../api/server' , './modules/banner' , './modules/cartStorage'],function($ , { getBanner2Data , getDetailData } , initBanner , { addCartStorage }){
+    //console.log( $ );
 
     var type = location.search.match(/type=([^&]+)/)[1];
     var id = location.search.match(/id=([^&]+)/)[1];
-    // console.log( type , id );
+    //console.log( type , id );
     var $detail = $('#detail');
     var $detailGoods = $('#detailGoods');
 
@@ -67,9 +68,10 @@ define(['jquery','../api/server','./modules/banner'],function($ , { getBanner2Da
         magnifier();
         chooseColorFn();
         chooseNumberFn();
+        addCartFn(res);
     }
 
-    function magnifier(){
+    function magnifier(){   //放大镜的功能
         var $detail_gallery_normal = $detail.find('.detail_gallery_normal');
         var $detail_gallery_normal_span = $detail.find('.detail_gallery_normal span');
         var $detail_gallery_large = $detail.find('.detail_gallery_large');
@@ -145,8 +147,36 @@ define(['jquery','../api/server','./modules/banner'],function($ , { getBanner2Da
         });
     }
 
+    function addCartFn(res){   //添加购物车功能
+        var $detail_message_cart = $detail.find('.detail_message_cart');
+        $detail_message_cart.click(function(){
+            var $detail_message_box = $detail.find('.detail_message_box').filter('.active');
+            var $detail_message_num = $detail.find('.detail_message_num input');
+            //添加的数据？
+            /* {
+                goodsChecked : true,
+                goodsName : 'HUAWEI Mate 30 4G',
+                goodsColor : '亮黑色',
+                goodsPrice : '1899.00',
+                goodsNumber : 4,
+                goodsId : 127382837
+            } */
+            var data = {
+                goodsChecked : true,
+                goodsName : res.goodsName,
+                goodsColor : $detail_message_box.html(),
+                goodsPrice : res.goodsPrice,
+                goodsNumber : Number($detail_message_num.val()),
+                goodsId : res.goodsId
+            };
+            //console.log(data);
+            addCartStorage(data,function(){
+                alert('购物车添加成功！');
+            });
+        });
+    }
+
     getBanner2Data().then((res)=>{
         initBanner(res);
     });
-
-})
+});
